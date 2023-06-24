@@ -12,6 +12,7 @@ public class Park {
     private int visitors;
     private String description;
 
+
     public int getParkId() {
         return parkId;
     }
