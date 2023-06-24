@@ -1,6 +1,10 @@
 package com.techelevator.dao;
 
+import com.techelevator.exception.DaoException;
+import com.techelevator.model.Campground;
 import com.techelevator.model.Reservation;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -17,13 +21,37 @@ public class JdbcReservationDao implements ReservationDao {
     @Override 
     public Reservation getReservationById(int id) {
 
-        return null;
+        Reservation reservation = null;
+        String sql = "select * from reservation where reservation_id =?;";
+        try {
+
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+            if (results.next()) {
+                reservation = mapRowToReservation(results);
+            }
+        }catch(CannotGetJdbcConnectionException e){
+            throw new DaoException("cannot find query",e);
+        }
+        return reservation;
+
     }
 
     @Override
     public Reservation createReservation(Reservation reservation) {
+        String sql = "INSERT INTO reservation (site_id, name, from_date, to_date, create_date) " +
+                "VALUES (?,?,?,?,?) RETURNING reservation_id";
+        Reservation reservation1 = null;
+        try {
+            int reservation_id = jdbcTemplate.queryForObject(sql,int.class, reservation.getSiteId(), reservation.getName(), reservation.getFromDate(), reservation.getToDate(),
+            reservation.getCreateDate());
+            reservation1 = getReservationById(reservation_id);
+        }catch(CannotGetJdbcConnectionException e){
+            throw new DaoException("cannot connect to database", e);
+        }catch(DataIntegrityViolationException e){
+            throw new DaoException("data integrity violation", e);
+        }
 
-        return new Reservation();
+        return reservation1;
     }
 
     private Reservation mapRowToReservation(SqlRowSet results) {
