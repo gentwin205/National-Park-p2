@@ -1,6 +1,8 @@
 package com.techelevator.dao;
 
+import com.techelevator.exception.DaoException;
 import com.techelevator.model.Campground;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -18,12 +20,35 @@ public class JdbcCampgroundDao implements CampgroundDao {
 
     @Override
     public Campground getCampgroundById(int id) {
-        return null;
+        Campground campground = null;
+       String sql = "select * from campground where campground_id =?;";
+       try {
+
+           SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+           if (results.next()) {
+               campground = mapRowToCampground(results);
+           }
+       }catch(CannotGetJdbcConnectionException e){
+           throw new DaoException("cannot find query",e);
+       }
+        return campground;
+
     }
 
     @Override
     public List<Campground> getCampgroundsByParkId(int parkId) {
-        return new ArrayList<>();
+        List<Campground> list = new ArrayList<>();
+        String sql = "select * from campground where park_id =?;";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, parkId);
+            while (results.next()) {
+                list.add(mapRowToCampground(results));
+            }
+        }catch(CannotGetJdbcConnectionException e){
+            throw new DaoException("cannot find query",e);
+
+        }
+        return list;
     }
 
     private Campground mapRowToCampground(SqlRowSet results) {

@@ -6,6 +6,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 
 public class JdbcCampgroundDaoTests extends BaseDaoTests {
@@ -26,7 +28,20 @@ public class JdbcCampgroundDaoTests extends BaseDaoTests {
 
     @Test
     public void getCampgroundsByParkId_Should_Return_All_Campgrounds_For_Park() {
-        Assert.fail();
+        List<Campground> campground = dao.getCampgroundsByParkId(1);
+
+        assertEquals("Incorrect campground returned for ID 1", 2, campground.size());
+        assertCampgroundsMatch(dao.getCampgroundById(1), campground.get(0));
+        assertCampgroundsMatch(dao.getCampgroundById(2), campground.get(1));
+
+    }
+
+    private void assertCampgroundsMatch(Campground expected, Campground actual){
+        Assert.assertEquals(expected.getCampgroundId(), actual.getCampgroundId());
+        Assert.assertEquals(expected.getParkId(), actual.getParkId());
+        Assert.assertEquals(expected.getName(), actual.getName());
+        Assert.assertEquals(expected.getOpenFromMonth(), actual.getOpenFromMonth());
+        Assert.assertEquals(expected.getOpenToMonth(), actual.getOpenToMonth());
     }
 
 }
